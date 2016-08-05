@@ -1,23 +1,43 @@
-var User = require('./models/user').User;
-
-var async = require('assync');
 var mongoose = require('./libs/mongoose');
-
-var db = mongoose.connection.db;
-
-mongoose.connection.on('open', function(){
-   var db = mongoose.connection.db;
-
-    console.log(mongoose.connection.readyState);
-    db.dropDatabase(function(err){
-        if (err) throw err;
-
-        var vasya = new User({username: 'Vasya', password: 'supervasya'});
-        var petya = new User({username: 'Petya', password: '123'});
-        var admin = new User({username: 'admin', password: 'thetruehero'});
-
-        console.log('OK');
-        mongoose.disconnect();
-    });
+var async = require('async');
+var User = require('./models/user').User;
+async.series([
+    open,
+    dropDatabase,
+    requireModels,
+    createUsers,
+    showAllUsers
+], function(err) {
+    console.log(arguments);
+    mongoose.disconnect();
+    process.exit(err ? 255 : 0);
 });
 
+function open(callback) {
+    mongoose.connection.on('open', callback);
+}
+
+function dropDatabase(callback) {
+    var db = mongoose.connection.db;
+    db.dropDatabase(callback);
+}
+
+function requireModels(callback) {
+    require('./models/user');
+
+    async.each(Object.keys(mongoose.models), function(modelName, callback) {
+        mongoose.models[modelName].ensureIndexes(callback);
+    }, callback);
+}
+
+function createUsers(callback) {
+
+
+}
+
+function showAllUsers(callback) {
+    User.find({}, function(err, users) {
+        if (err) throw err;
+        console.log(users);
+    });
+}
