@@ -9,5 +9,14 @@
         }
       }
     }
+  },
+  "session": {
+    "secret": "KompleteAudio6",
+    "key": "sid",
+    "cookie": {
+      "path": "/",
+      "httpOnly": true,
+      "macAge": null
+    }
   }
 }
